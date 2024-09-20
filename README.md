@@ -1,35 +1,80 @@
-# FarmStack
-1. **TDD Workflow**:
-    - Begin with writing tests that demonstrate the feature is not yet implemented (Red tests).
-    - Implement code to make tests pass (Green tests).
-    - Refactor code to improve quality (Refactor).
-    - Commit changes as you progress (WIP commits for Red, Green, and Refactor stages).
+### **FARM Stack Tutorial with Semantic Seed Studio TDD Standards**
 
-2. **Test Case Structure**:
-    - Follow the Arrange, Act, Assert (AAA) pattern in all test cases.
-    - Group related tests using `describe` blocks for clarity.
-    - Write clear, descriptive test names that specify the expected behavior.
-    - Organize tests into suites (unit tests, integration tests, etc.).
+This tutorial follows the Semantic Seed TDD (Test-Driven Development) standards, integrating FastAPI for the backend, React for the frontend, and MongoDB for the database. You'll start with test-driven development (TDD), following a cycle of writing tests, making them pass, and refactoring code for clarity and performance.
+
+### **1. Project Setup and File Structure**
+
+1. **Create Project Directories**:
+   Run these bash commands to create the project structure and necessary files.
+
+```bash
+# Create the project root directory and navigate into it
+mkdir farm-stack-todo
+cd farm-stack-todo
+
+# Create subdirectories for backend, frontend, and nginx
+mkdir backend frontend nginx
+
+# Create Docker and environment files in the project root
+touch docker-compose.yml
+
+# Backend setup: Create the backend directory structure
+cd backend
+python -m venv venv  # Create a virtual environment
+source venv/bin/activate  # Activate the virtual environment
+mkdir src  # Create a directory for source code
+
+# Create backend-specific files
+touch Dockerfile requirements.txt pyproject.toml
+cd src
+touch server.py dal.py
+
+# Frontend setup: Navigate back to root and initialize React app
+cd ../../frontend
+npx create-react-app .
+
+# Nginx setup: Create an nginx configuration file
+cd ../nginx
+touch nginx.conf
+
+# Final directory structure should look like this:
+# farm-stack-todo/
+# ├── backend/
+# │   ├── venv/
+# │   ├── src/
+# │   │   ├── server.py
+# │   │   ├── dal.py
+# │   ├── Dockerfile
+# │   ├── pyproject.toml
+# │   └── requirements.txt
+# ├── frontend/
+# ├── nginx/
+# │   └── nginx.conf
+# └── docker-compose.yml
+```
+
+2. **Set up Backend Environment**:
+   Now activate your Python virtual environment and install dependencies:
+
+```bash
+# Install FastAPI, Motor, and other backend dependencies
+pip install "fastapi[all]" "motor[srv]" beanie aiostream
+
+# Generate the requirements.txt file
+pip freeze > requirements.txt
+```
 
 ---
 
-### Updated Tutorial with Semantic Seed TDD Standard Formatting
+### **2. Test-Driven Development (TDD) Approach for the Backend**
+
+We'll follow the TDD process by first writing tests (Red), then implementing code to make the tests pass (Green), and finally refactoring for quality (Refactor).
 
 ---
 
-### Project Setup and Backend Development with TDD
+#### **Step 1: Write Failing Tests for the Data Access Layer (DAL) - Red Tests**
 
-**Step 1: Set up the project structure** (Same as original)
-
----
-
-**Step 2: Implement Data Access Layer (DAL)**
-
-Before implementing the DAL, write failing tests to demonstrate that the desired functionality does not exist yet (Red tests).
-
-#### Red Tests for `dal.py`
-
-Create a test file `test_dal.py` in the `src` directory:
+Create the `test_dal.py` file in the `src` directory to define tests for the `dal.py` module:
 
 ```python
 import pytest
@@ -65,17 +110,22 @@ def test_create_todo_list(todo_dal):
     assert result == "mock_id"
 ```
 
-This tests two functions in the DAL (`list_todo_lists` and `create_todo_list`), ensuring that the initial implementation will fail. Commit this as a WIP (Red tests):
+Run the tests using `pytest`, and they will fail, confirming the Red stage:
 
+```bash
+pytest
+```
+
+Commit the failing tests:
 ```bash
 git commit -m "WIP: Red tests for DAL"
 ```
 
 ---
 
-**Step 3: Implement DAL**
+#### **Step 2: Implement the DAL to Pass Tests - Green Tests**
 
-Now, write the code in `dal.py` to make the tests pass:
+Now that the tests are failing, implement the DAL to make them pass. Update `dal.py` with the following content:
 
 ```python
 from bson import ObjectId
@@ -99,31 +149,39 @@ class ToDoDAL:
         return str(response.inserted_id)
 ```
 
-Run the tests and ensure they pass (Green tests). Commit the passing tests:
+Re-run the tests to ensure they pass, confirming the Green stage:
 
+```bash
+pytest
+```
+
+Commit the changes:
 ```bash
 git commit -m "WIP: Green tests for DAL"
 ```
 
 ---
 
-**Step 4: Refactor DAL**
+#### **Step 3: Refactor the DAL for Quality**
 
-Refactor the DAL to improve code quality, ensuring the tests still pass. Commit the refactored code:
+Refactor the code to improve readability and performance. Ensure all tests still pass after refactoring:
 
+```bash
+pytest
+```
+
+Commit the refactor:
 ```bash
 git commit -m "Refactor complete: DAL implementation"
 ```
 
 ---
 
-### Implementing the FastAPI Server with TDD
+### **3. Implementing the FastAPI Server with TDD**
 
-**Step 5: Write Tests for FastAPI Server**
+#### **Step 4: Write Failing Tests for FastAPI - Red Tests**
 
-Before implementing the FastAPI server, write tests to ensure the API endpoints don’t work yet.
-
-Create a test file `test_server.py` in the `src` directory:
+Before implementing the FastAPI server, write failing tests for the API. Create `test_server.py`:
 
 ```python
 from fastapi.testclient import TestClient
@@ -148,17 +206,22 @@ def test_create_todo_list():
     assert response.json()["name"] == "New List"
 ```
 
-These tests will fail as the FastAPI server hasn’t been implemented yet. Commit this as a WIP (Red tests):
+Run the tests and observe that they fail:
 
+```bash
+pytest
+```
+
+Commit the failing tests:
 ```bash
 git commit -m "WIP: Red tests for FastAPI server"
 ```
 
 ---
 
-**Step 6: Implement the FastAPI Server**
+#### **Step 5: Implement the FastAPI Server to Pass Tests - Green Tests**
 
-Now, implement the FastAPI server in `server.py` to make the tests pass:
+Implement the FastAPI server in `server.py`:
 
 ```python
 from fastapi import FastAPI, status
@@ -175,29 +238,37 @@ async def create_todo_list(new_list: dict):
     return {"id": await app.todo_dal.create_todo_list(new_list['name']), "name": new_list['name']}
 ```
 
-Run the tests again, ensuring they pass (Green tests). Commit the passing tests:
+Re-run the tests and ensure they pass:
 
+```bash
+pytest
+```
+
+Commit the passing tests:
 ```bash
 git commit -m "WIP: Green tests for FastAPI server"
 ```
 
 ---
 
-**Step 7: Refactor FastAPI Server**
+#### **Step 6: Refactor the FastAPI Server for Quality**
 
-Refactor the FastAPI server code to improve readability and performance, then commit the changes:
+Refactor the FastAPI server code for clarity and efficiency, then run the tests to ensure they still pass:
 
+```bash
+pytest
+```
+
+Commit the refactor:
 ```bash
 git commit -m "Refactor complete: FastAPI server"
 ```
 
 ---
 
-### Integration Tests for the Full Stack
+### **4. Integration Testing for Full Stack**
 
-Write integration tests that simulate real-world usage of the application. These tests will involve running the backend and frontend together and verifying that the entire system works as expected.
-
-Create `test_integration.py`:
+Write integration tests that ensure the backend and frontend interact correctly. Create `test_integration.py`:
 
 ```python
 from fastapi.testclient import TestClient
@@ -221,20 +292,36 @@ def test_create_list_and_item():
     assert item_response.status_code == 201
 ```
 
-These integration tests will verify that different components (DAL, FastAPI) interact correctly.
-
----
-
-### Running and Testing the Application
-
-At this point, you can run all tests (unit, integration, etc.) using the following command:
-
+Run the integration tests:
 ```bash
 pytest
 ```
 
-This command will run the tests in separate suites and ensure the correctness of all components.
+---
+
+### **5. Running the Application and Testing**
+
+To build and run the application using Docker, execute the following commands:
+
+```bash
+docker-compose up --build
+```
+
+Visit `http://localhost:8000` in your browser to interact with the application.
 
 ---
 
-By incorporating the Semantic Seed TDD workflow, we ensure that every feature is backed by tests from the very beginning. The process emphasizes writing tests first (Red), making them pass (Green), and refactoring for clarity and quality (Refactor).
+### **6. Stopping the Application**
+
+To stop the application:
+
+- If running without Docker: press `Ctrl+C` in each terminal.
+- If using Docker, press `Ctrl+C` in the terminal running `docker-compose up`, and stop the containers with:
+
+```bash
+docker-compose down
+```
+
+---
+
+By following the Semantic Seed TDD workflow, you can ensure that every feature is developed with test coverage. The process of writing Red tests, passing them (Green), and refactoring for quality ensures that your code remains clean, maintainable, and scalable.
